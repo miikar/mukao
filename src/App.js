@@ -13,27 +13,28 @@ class App extends Component {
 
   constructor(props) {
     super(props);
+    const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
     this.state = {
-      baseNote: 0,
-      intervalNote: 4,
+      baseNote: null,
+      intervalNote: null,
       points: 0,
       pressedIndex: null,
       pressSuccess: true,
-      gamestate: 'guessNote'
+      gamestate: 'guessNote',
+      statistics: savedStatistics
     }
 
     // Init notes
     const noteTiming = {};
     for (let i = 0; i< numNotes; i++) {
-      noteTiming[i] = [i*2000, 1000];
+      noteTiming[i] = [i*2000, 1600];
     }
 
     this.notes = new Howl({ 
       src: ['notes.mp3'],
-      volume: 0.4,
+      volume: 0.6,
       sprite: noteTiming,
       loop: false,
-      html5: true
     });
   }
 
@@ -56,7 +57,7 @@ class App extends Component {
 
     window.setTimeout(() => {
       this.playSound(notes.intervalNote);
-    }, 500)
+    }, 700)
 
     this.setState(notes);
   }
@@ -75,21 +76,29 @@ class App extends Component {
   }
 
   checkPoints = (index) => {
-    const { points, intervalNote } = this.state;
-    
+    const { points, baseNote, intervalNote, statistics } = this.state;
+    const interval = Math.abs(intervalNote - baseNote);
     if (index === intervalNote) {
       return {
         points: points + 1,
         pressSuccess: true,
         pressedIndex: index,
-        gamestate: 'showAnswer'
+        gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
+        }
       }
     } else {
       return {
         points: points - 1,
         pressSuccess: false,
         pressedIndex: index,
-        gamestate: 'showAnswer'
+        gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
+        }
       }
     }
   }
@@ -109,12 +118,16 @@ class App extends Component {
   }
 
   handleKeyPress = (index) => () => {
-    if (this.state.gamestate === 'showAnswer') return;
+    if (this.state.gamestate === 'showAnswer') {
+      this.playSound(index);
+      return;
+    }
     this.playSound(index);
     const points = this.checkPoints(index);
-    this.setState(points)
+    this.setState(points);
+    window.localStorage.setItem('statistics', JSON.stringify(points.statistics));
 
-    window.setTimeout(this.continueGuessing, 1500);
+    window.setTimeout(this.continueGuessing, 2000);
     //window.clearInterval(this.loop);
   }
 
@@ -125,7 +138,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Points: {points}</h1>
-          <button onClick={() => {window.clearInterval(this.loop)}}>Pause</button>
+          {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
           baseNote={baseNote} 
@@ -134,6 +147,8 @@ class App extends Component {
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
+        <Statistics statistics={this.state.statistics} />
+        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Forget statistics</button>
       </div>
     );
   }
@@ -180,3 +195,23 @@ const Keyboard = ({ baseNote, handleKeyPress, pressedIndex, pressSuccess, answer
     </div>
   );
 }
+
+const Statistics = ({ statistics }) => {
+  return (
+    <div className="statistics">
+      { Object.keys(statistics).map((interval, i) => (
+        <div className="statistic">
+          <div>{interval}</div> 
+          <div>{(getCorrectAnswers(statistics[interval]) / statistics[interval].length * 100).toFixed(0)}%</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const getCorrectAnswers = (intervalStatistic) => intervalStatistic.reduce(
+  (acc, answer) => {
+    if (answer === 1) return acc + 1;
+    return acc;
+  }, 0
+)

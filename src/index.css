@@ -49,3 +49,14 @@ body {
 .note.answer {
   background-color: peru;
 }
+
+.statistics {
+  width: 100px;
+  margin: 0 auto;
+}
+
+.statistic > *{
+  display: table-cell;
+  width: 30px;
+  height: 20px;
+}
