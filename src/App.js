@@ -4,7 +4,7 @@ import './App.css';
 
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
-const loopLength = 50000;
+const loopLength = 3000;
 const getRandom = (array) => {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -15,7 +15,7 @@ class App extends Component {
     super(props);
     this.state = {
       baseNote: 0,
-      noteDistance: 4,
+      intervalNote: 4,
       points: 0,
       pressedIndex: null,
       pressSuccess: true,
@@ -30,7 +30,7 @@ class App extends Component {
 
     this.notes = new Howl({ 
       src: ['notes.mp3'],
-      volume: 0.0,
+      volume: 0.4,
       sprite: noteTiming,
       loop: false,
       html5: true
@@ -39,15 +39,26 @@ class App extends Component {
 
   componentDidMount() {
     // Start the game
-    this.loop = window.setInterval(this.roundEnd, loopLength);
+    //this.loop = window.setInterval(this.progress, loopLength);
   }
 
-  roundEnd = () => {
-    if (!this.state.pressedIndex) {
-      this.checkPoints();
-      window.setTimeout(this.continueGuessing, 1500);
-      window.clearInterval(this.loop);
-    }
+  progress = () => {
+    //if (!this.state.pressedIndex) {
+    //  const points = this.checkPoints();
+    //  
+    //  window.setTimeout(this.continueGuessing, 1500);
+    //  //window.clearInterval(this.loop);
+    //}
+
+    // Play the selected interval
+    const notes = this.nextSound()
+    this.playSound(notes.baseNote);
+
+    window.setTimeout(() => {
+      this.playSound(notes.intervalNote);
+    }, 500)
+
+    this.setState(notes);
   }
 
   nextSound = () => {
@@ -57,26 +68,40 @@ class App extends Component {
     if (baseNote > 36) direction = -1;
     const noteDistance = getRandom(intervals) * direction;
 
-    this.playSound(baseNote);
+    return { 
+      baseNote: baseNote,
+      intervalNote: baseNote + noteDistance
+    }
+  }
 
-    window.setTimeout(() => {
-      this.playSound(baseNote + noteDistance);
-    }, 500)
-
-    this.setState({ 
-      baseNote, 
-      noteDistance,
-    });
+  checkPoints = (index) => {
+    const { points, intervalNote } = this.state;
+    
+    if (index === intervalNote) {
+      return {
+        points: points + 1,
+        pressSuccess: true,
+        pressedIndex: index,
+        gamestate: 'showAnswer'
+      }
+    } else {
+      return {
+        points: points - 1,
+        pressSuccess: false,
+        pressedIndex: index,
+        gamestate: 'showAnswer'
+      }
+    }
   }
 
   continueGuessing = () => {
-    this.nextSound();
     this.setState({
       gamestate: 'guessNote',
       pressedIndex: null,
       pressSuccess: false,
     });
-    this.loop = window.setInterval(this.roundEnd, loopLength);
+    this.progress()
+    //this.loop = window.setInterval(this.progress, loopLength);
   }
 
   playSound = (index) => {
@@ -86,42 +111,16 @@ class App extends Component {
   handleKeyPress = (index) => () => {
     if (this.state.gamestate === 'showAnswer') return;
     this.playSound(index);
-    this.checkPoints(index);
+    const points = this.checkPoints(index);
+    this.setState(points)
 
     window.setTimeout(this.continueGuessing, 1500);
-    window.clearInterval(this.loop);
+    //window.clearInterval(this.loop);
   }
-
-  checkPoints = (index) => {
-    const { baseNote, noteDistance } = this.state;
-    
-    if (index === baseNote + noteDistance) {
-      this.setState(({ points, pressSuccess }) => {
-        return {
-          points: points + 1,
-          pressSuccess: true,
-          pressedIndex: index,
-          gamestate: 'showAnswer'
-        }
-      });
-    } else {
-      this.setState(({ points, pressSuccess }) => {
-        return {
-          points: points - 1,
-          pressSuccess: false,
-          pressedIndex: index,
-          gamestate: 'showAnswer'
-        }
-      });
-    }
-  }
-
-  
 
   render() {
-    const { started, baseNote, noteDistance, points, pressedIndex, pressSuccess, gamestate } = this.state;
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
     console.log(this.state)
-    // this.playSound(baseNote + noteDistance);
     return (
       <div className="App">
         <header className="App-header">
@@ -133,7 +132,7 @@ class App extends Component {
           handleKeyPress={this.handleKeyPress} 
           pressedIndex={pressedIndex}
           pressSuccess={pressSuccess}
-          answerNote={gamestate === 'showAnswer' ? baseNote + noteDistance : ''}
+          answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
       </div>
     );
