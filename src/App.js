@@ -126,7 +126,7 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h1 className="App-title">{baseNote} Points: {points}</h1>
+          <h1 className="App-title">Points: {points}</h1>
           <button onClick={() => {window.clearInterval(this.loop)}}>Pause</button>
         </header>
         <Keyboard
