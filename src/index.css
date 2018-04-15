@@ -4,6 +4,15 @@ body {
   font-family: sans-serif;
 }
 
+.keyboard-scroll-container {
+  overflow-x: scroll;
+}
+
+.keyboard-container {
+  width: 1230px;
+  text-align: left;
+}
+
 .note {
   display: inline-block;
   width: 40px;

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {Howl, Howler} from 'howler';
 import './App.css';
 
+import notesMp3 from './audio/notes.mp3';
+
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
 const loopLength = 5000;
@@ -29,7 +31,7 @@ class App extends Component {
     }
 
     this.notes = new Howl({ 
-      src: ['notes.wav'],
+      src: ['notes.mp3'],
       volume: 0.8,
       sprite: noteTiming,
       loop: false,
@@ -173,8 +175,10 @@ const Keyboard = ({ baseNote, handleKeyPress, pressedIndex, pressSuccess, answer
     );
   }
   return (
-    <div className="keyboard-container">
-      {keys}
+    <div className="keyboard-scroll-container">
+      <div className="keyboard-container">
+        {keys}
+      </div>
     </div>
   );
 }
