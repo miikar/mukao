@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import {Howl, Howler} from 'howler';
 import './App.css';
 
-import notesMp3 from './audio/notes.mp3';
-
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
 const loopLength = 5000;
