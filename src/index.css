@@ -8,8 +8,13 @@ body {
   overflow-x: scroll;
 }
 
+.keyboard-scroll-container::-webkit-scrollbar { 
+  display: none; 
+}
+
 .keyboard-container {
   width: 1230px;
+  margin: auto;
   text-align: left;
 }
 
