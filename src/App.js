@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Howl, Howler} from 'howler';
+import {Howl} from 'howler';
 import './App.css';
 
 const numNotes = 49;
@@ -39,8 +39,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    // Start the game
-    //this.loop = window.setInterval(this.progress, loopLength);
+    this.notes.once('load', this.progress);
   }
 
   progress = () => {
@@ -62,12 +61,29 @@ class App extends Component {
     this.setState(notes);
   }
 
+  getLowestAccuracy = (statistics={}) => {
+    const playedIntervals = Object.keys(statistics);
+
+    // Get lowest accuracy only when all intervals have been played
+    if (playedIntervals.length < intervals.length) return getRandom(intervals);
+
+    return playedIntervals.reduce((lowest, interval) => {
+      if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
+        console.log('lowest', interval)
+        return interval;
+      }
+      return lowest;
+    }, 1
+  )};
+
   nextSound = () => {
     const baseNote = Math.floor(Math.random() * numNotes);
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote > 36) direction = -1;
-    const noteDistance = getRandom(intervals) * direction;
+    // const noteDistance = getRandom(intervals) * direction;
+    
+    const noteDistance = this.getLowestAccuracy(this.state.statistics) * direction;
 
     return { 
       baseNote: baseNote,
@@ -132,7 +148,7 @@ class App extends Component {
   }
 
   render() {
-    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
     console.log(this.state)
     return (
       <div className="App">
@@ -147,8 +163,8 @@ class App extends Component {
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
-        <Statistics statistics={this.state.statistics} />
-        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Forget statistics</button>
+        <Statistics statistics={statistics} />
+        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button>
       </div>
     );
   }
@@ -209,7 +225,7 @@ const Statistics = ({ statistics }) => {
   )
 }
 
-const getCorrectAnswers = (intervalStatistic) => intervalStatistic.reduce(
+const getCorrectAnswers = (intervalStatistic=[]) => intervalStatistic.reduce(
   (acc, answer) => {
     if (answer === 1) return acc + 1;
     return acc;
