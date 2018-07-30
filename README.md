@@ -1,6 +1,13 @@
+# Mukao 
+https://mukaoapp.firebaseapp.com/
+
 # Developing
+```
 npm install
 npm start
+```
 
-# Build
+# Build and deploy
+```
 npm run deploy
+```
