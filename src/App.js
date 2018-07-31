@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Howl} from 'howler';
+import { sendIntervalData } from './Analytics';
 import './App.css';
 
 const numNotes = 49;
@@ -8,12 +9,21 @@ const loopLength = 3000;
 const getRandom = (array) => {
   return array[Math.floor(Math.random() * array.length)];
 }
+const getOrSetUserID = () => {
+  let userID = window.localStorage.getItem('userID');
+  if (!userID) {
+    userID = Math.floor(Math.random()*99999999);
+    window.localStorage.setItem('userID', userID);
+  }
+  return userID;
+}
 
 class App extends Component {
 
   constructor(props) {
     super(props);
     const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
+    this.userID = getOrSetUserID();
     this.state = {
       baseNote: null,
       intervalNote: null,
@@ -21,7 +31,7 @@ class App extends Component {
       pressedIndex: null,
       pressSuccess: true,
       gamestate: 'guessNote',
-      statistics: savedStatistics
+      statistics: savedStatistics,
     }
 
     // Init notes
@@ -32,13 +42,19 @@ class App extends Component {
 
     this.notes = new Howl({ 
       src: ['notes.mp3'],
-      volume: 0.6,
+      volume: 0.8,
       sprite: noteTiming,
       loop: false,
     });
+
   }
 
   componentDidMount() {
+    const { baseNote, intervalNote } = this.state;
+    this.keyboardElement = document.querySelector('.keyboard-scroll-container');
+    this.basenoteElement = document.querySelector(`.note:nth-of-type(30)`);
+    this.keyboardElement.scrollLeft = baseNote < intervalNote ? 
+      this.basenoteElement.offsetLeft : this.basenoteElement.offsetRight;
     this.notes.once('load', this.progress);
   }
 
@@ -51,7 +67,7 @@ class App extends Component {
     //}
 
     // Play the selected interval
-    const notes = this.nextSound()
+    const notes = this.nextSound();
     this.playSound(notes.baseNote);
 
     window.setTimeout(() => {
@@ -59,6 +75,7 @@ class App extends Component {
     }, 700)
 
     this.setState(notes);
+    this.lastPlayed = Date.now();
   }
 
   getLowestAccuracy = (statistics={}) => {
@@ -81,9 +98,9 @@ class App extends Component {
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote > 36) direction = -1;
-    // const noteDistance = getRandom(intervals) * direction;
+    const noteDistance = getRandom(intervals) * direction;
     
-    const noteDistance = this.getLowestAccuracy(this.state.statistics) * direction;
+    // const noteDistance = this.getLowestAccuracy(this.state.statistics) * direction;
 
     return { 
       baseNote: baseNote,
@@ -91,14 +108,23 @@ class App extends Component {
     }
   }
 
-  checkPoints = (index) => {
+  checkPoints = (guessedNote) => {
     const { points, baseNote, intervalNote, statistics } = this.state;
     const interval = Math.abs(intervalNote - baseNote);
-    if (index === intervalNote) {
+    sendIntervalData({
+      userID: this.userID,
+      baseNote,
+      intervalNote,
+      guessedNote,
+      timestamp: Date.now(),
+      guessTime: Date.now() - this.lastPlayed,
+    });
+    this.lastPlayed = Date.now();
+    if (guessedNote === intervalNote) {
       return {
         points: points + 1,
         pressSuccess: true,
-        pressedIndex: index,
+        pressedIndex: guessedNote,
         gamestate: 'showAnswer',
         statistics: {
           ...statistics,
@@ -109,7 +135,7 @@ class App extends Component {
       return {
         points: points - 1,
         pressSuccess: false,
-        pressedIndex: index,
+        pressedIndex: guessedNote,
         gamestate: 'showAnswer',
         statistics: {
           ...statistics,

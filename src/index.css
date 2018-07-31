@@ -6,6 +6,7 @@ body {
 
 .keyboard-scroll-container {
   overflow-x: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 .keyboard-scroll-container::-webkit-scrollbar { 
