@@ -50,11 +50,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const { baseNote, intervalNote } = this.state;
-    this.keyboardElement = document.querySelector('.keyboard-scroll-container');
-    this.basenoteElement = document.querySelector(`.note:nth-of-type(30)`);
-    this.keyboardElement.scrollLeft = baseNote < intervalNote ? 
-      this.basenoteElement.offsetLeft : this.basenoteElement.offsetRight;
     this.notes.once('load', this.progress);
   }
 
