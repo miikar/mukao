@@ -20,10 +20,11 @@ class Keyboard extends Component {
   componentDidMount() {
     this.props.actions.startChallenge(this.nextSound())
       .then(() => {
-        this.props.playsound(this.props.notes.baseNote)
-        window.setTimeout(() => {
-          this.props.playsound(this.props.notes.targetNote);
-        }, 700)
+        this.props.playNotes([
+          this.props.notes.baseNote, 
+          this.props.notes.targetNote,
+          //5,6,7
+        ])
       })
   }
 

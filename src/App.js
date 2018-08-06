@@ -41,8 +41,22 @@ class App extends Component {
     //this.loop = window.setInterval(this.progress, loopLength);
   }
 
+  playNotes = (notes) => {
+    //this.playsound(notes[0])
+    // all notes including the first one have a timeout before playing
+    return notes.reduce((promise, note) => {
+      return promise.then(() => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            this.playsound(note)
+            resolve()
+          }, 1000)
+        })
+      })
+    }, Promise.resolve())
+  }
+
   playsound = (index) => {
-    console.log("index" + index)
     this.notes.play('' + index);
   }
 
@@ -110,7 +124,7 @@ class App extends Component {
         <Keyboard
           numNotes={numNotes}
           intervals={intervals}
-          playsound={this.playsound}
+          playNotes={this.playNotes}
           //baseNote={baseNote} 
           //handleKeyPress={this.handleKeyPress} 
           //pressedIndex={pressedIndex}
