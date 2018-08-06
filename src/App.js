@@ -42,15 +42,13 @@ class App extends Component {
   }
 
   playNotes = (notes) => {
-    //this.playsound(notes[0])
-    // all notes including the first one have a timeout before playing
-    return notes.reduce((promise, note) => {
+    const n = notes.length - 1;
+    return notes.reduce((promise, note, index) => {
       return promise.then(() => {
         return new Promise((resolve) => {
-          setTimeout(() => {
-            this.playsound(note)
-            resolve()
-          }, 1000)
+          this.playsound(note)
+          if (index === n) resolve()
+          else setTimeout(() => resolve(), 700)
         })
       })
     }, Promise.resolve())

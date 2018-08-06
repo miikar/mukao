@@ -14,17 +14,23 @@ const getRandom = (array) => {
 class Keyboard extends Component {
   constructor(props) {
     super(props)
-    
+      this.state = {
+        keyboardState: 'PLAY_SOUND'
+      }
   }
 
   componentDidMount() {
+    console.log(this.state)
     this.props.actions.startChallenge(this.nextSound())
       .then(() => {
-        this.props.playNotes([
+        return this.props.playNotes([
           this.props.notes.baseNote, 
           this.props.notes.targetNote,
           //5,6,7
         ])
+      })
+      .then(() => {
+        this.setState({ keyboardState: 'MAKE_GUESS' })
       })
   }
 
@@ -42,40 +48,33 @@ class Keyboard extends Component {
   }
 
   handleKeyPress = (index) => () => {
-    if (this.state.gamestate === 'PLAY_SOUND' || this.state.gamestate === 'SHOW_ANSWER') return;
-    if (this.state.gamestate === 'MAKE_GUESS') {
-      this.props.playsound(index)
-      switch (index) {
-        case index === this.props.notes.baseNote:
-          //this.props.playsound(this.props.notes.baseNote);
-
-          window.setTimeout(() => {
-            this.props.playsound(this.props.notes.targetNote);
-          }, 700)
-          break;
-        case index !== this.props.notes.baseNote:
-          this.props.make_guess(index)
-            //.then(() => this.props.actions.updatePoints(index))
-          this.props.playsound(this.props.notes.targetNote)
-          break;
-        default:
-          break;
+    if (this.state.keyboardState === 'PLAY_SOUND' || this.state.keyboardState === 'SHOW_ANSWER') return;
+    if (this.state.keyboardState === 'MAKE_GUESS') {
+      if (index === this.props.notes.baseNote) {
+        this.props.playNotes([this.props.notes.baseNote, this.props.notes.targetNote])
+      } else {
+        this.setState({ keyboardState: 'SHOW_ANSWER' })
+        this.props.playNotes([index])
+          .then(() => { return this.props.actions.makeGuess({ guessedNote: index }) })
+          .then(() => { return this.props.playNotes([this.props.targetNote]) })
+          //.then(() => { return this.props.actions.updatePoints() })
+          .then(() => {
+            // automatically start next challenge after a delay
+            window.setTimeout(() => {
+              this.props.actions.startChallenge(this.nextSound())
+                .then(() => {
+                  return this.props.playNotes([
+                    this.props.notes.baseNote, 
+                    this.props.notes.targetNote,
+                  ])
+                })
+                .then(() => this.setState({ keyboardState: 'MAKE_GUESS' }))
+              }, 1000);
+          })
       }
     }
     //this.setState(points);
     //window.localStorage.setItem('statistics', JSON.stringify(points.statistics));
-    this.setState({ gamestate: 'SHOW_ANSWER' })
-    window.setTimeout(
-      this.props.startChallenge(this.nextSound())
-        .then(() => {
-          this.props.playsound(this.props.notes.baseNote)
-          window.setTimeout(() => {
-            this.props.playsound(this.props.notes.targetNote);
-          }, 700)
-        })
-        .then(() => this.setState({ gamestate: 'MAKE_GUESS' })),
-      2000);
-    //window.clearInterval(this.loop);
   }
 
   render() {
@@ -90,7 +89,7 @@ class Keyboard extends Component {
           handleKeyPress={this.handleKeyPress}
           pressedIndex={this.guessedNote}
           pressSuccess={this.guessedNote === this.props.notes.targetNote}
-          //answerNote={this.state.gamestate === 'showAnswer' ? intervalNote : ''}
+          //answerNote={this.state.keyboardState === 'showAnswer' ? intervalNote : ''}
         />
       );
     }
