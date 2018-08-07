@@ -1,5 +1,6 @@
 export const MAKE_GUESS = 'MAKE_GUESS'
 export const START_CHALLENGE = 'START_CHALLENGE'
+export const UPDATE_STATS = 'UPDATE_STATS'
 
 
 export const startChallenge = (notes) => (dispatch) => {
@@ -18,6 +19,16 @@ export const makeGuess = (notes) => (dispatch) => {
         dispatch({
             type: MAKE_GUESS,
             notes
+        })
+        resolve()
+    })
+}
+
+export const updateStats = (stats) => dispatch => {
+    return new Promise((resolve) => {
+        dispatch({
+            type: UPDATE_STATS,
+            stats
         })
         resolve()
     })

@@ -1,4 +1,4 @@
-import { START_CHALLENGE, MAKE_GUESS } from "../actions";
+import { START_CHALLENGE, MAKE_GUESS, UPDATE_STATS } from "../actions";
 
 const initialState = {
     baseNote: null,
@@ -6,20 +6,31 @@ const initialState = {
     guessedNote: null
 }
 
-export function notes(state = initialState, action) {
+export function notes(notes = initialState, action) {
     switch (action.type) {
         case START_CHALLENGE:
             return Object.assign(
-                {}, state,
+                {}, notes,
                 action.notes
-                //{ gamestate: 'PLAY_SOUND' },
             )
         case MAKE_GUESS:
             return Object.assign(
-                {}, state,
+                {}, notes,
                 action.notes
             )
         default:
-            return state
+            return notes
+    }
+}
+
+export function statistics(statistics = {}, action) {
+    switch (action.type) {
+        case UPDATE_STATS:
+            return Object.assign(
+                {}, statistics,
+                action.statistics
+            )
+        default:
+            return statistics
     }
 }
