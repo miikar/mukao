@@ -34,16 +34,71 @@ class Keyboard extends Component {
       })
   }
 
+  getLowestAccuracy = (statistics={}) => {
+    const playedIntervals = Object.keys(statistics);
+
+    // Get lowest accuracy only when all intervals have been played
+    if (playedIntervals.length < intervals.length) return getRandom(intervals);
+
+    return playedIntervals.reduce((lowest, interval) => {
+      if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
+        console.log('lowest', interval)
+        return interval;
+      }
+      return lowest;
+    }, 1
+  )};
+
   nextSound = () => {
     const baseNote = Math.floor(Math.random() * this.props.numNotes);
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote > 36) direction = -1;
     const noteDistance = getRandom(this.props.intervals) * direction;
+
+    // const noteDistance = this.getLowestAccuracy(this.state.statistics) * direction;
+
     return {
         baseNote: baseNote,
         targetNote: baseNote + noteDistance,
         guessedNote: null
+    }
+  }
+
+  checkPoints = (guessedNote) => {
+    const { points, baseNote, intervalNote, statistics } = this.state;
+    const interval = Math.abs(intervalNote - baseNote);
+    sendIntervalData({
+      userID: this.userID,
+      baseNote,
+      intervalNote,
+      guessedNote,
+      timestamp: Date.now(),
+      guessTime: Date.now() - this.lastPlayed,
+    });
+    this.lastPlayed = Date.now();
+    if (guessedNote === intervalNote) {
+      return {
+        points: points + 1,
+        pressSuccess: true,
+        pressedIndex: guessedNote,
+        gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
+        }
+      }
+    } else {
+      return {
+        points: points - 1,
+        pressSuccess: false,
+        pressedIndex: guessedNote,
+        gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
+        }
+      }
     }
   }
 

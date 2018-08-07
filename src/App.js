@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Howl } from 'howler';
+import {Howl} from 'howler';
+import { sendIntervalData } from './Analytics';
 import './App.css';
 
 import Keyboard from './components/keyboard'
@@ -7,12 +8,25 @@ import { Statistics } from './components/statistics'
 
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
+const loopLength = 3000;
+const getRandom = (array) => {
+  return array[Math.floor(Math.random() * array.length)];
+}
+const getOrSetUserID = () => {
+  let userID = window.localStorage.getItem('userID');
+  if (!userID) {
+    userID = Math.floor(Math.random()*99999999);
+    window.localStorage.setItem('userID', userID);
+  }
+  return userID;
+}
 
 class App extends Component {
 
   constructor(props) {
     super(props);
     const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
+    this.userID = getOrSetUserID();
     this.state = {
     //  baseNote: null,
     //  intervalNote: null,
@@ -30,15 +44,15 @@ class App extends Component {
 
     this.notes = new Howl({
       src: ['notes.mp3'],
-      volume: 0.6,
+      volume: 0.8,
       sprite: noteTiming,
       loop: false,
     });
+
   }
 
   componentDidMount() {
-    // Start the game
-    //this.loop = window.setInterval(this.progress, loopLength);
+    this.notes.once('load', this.progress);
   }
 
   playNotes = (notes) => {
@@ -70,16 +84,26 @@ class App extends Component {
     const notes = this.nextSound()
 
     this.setState(notes);
+    this.lastPlayed = Date.now();
   }
 
-  checkPoints = (index) => {
+  checkPoints = (guessedNote) => {
     const { points, baseNote, intervalNote, statistics } = this.state;
     const interval = Math.abs(intervalNote - baseNote);
-    if (index === intervalNote) {
+    sendIntervalData({
+      userID: this.userID,
+      baseNote,
+      intervalNote,
+      guessedNote,
+      timestamp: Date.now(),
+      guessTime: Date.now() - this.lastPlayed,
+    });
+    this.lastPlayed = Date.now();
+    if (guessedNote === intervalNote) {
       return {
         points: points + 1,
         pressSuccess: true,
-        pressedIndex: index,
+        pressedIndex: guessedNote,
         gamestate: 'showAnswer',
         statistics: {
           ...statistics,
@@ -90,7 +114,7 @@ class App extends Component {
       return {
         points: points - 1,
         pressSuccess: false,
-        pressedIndex: index,
+        pressedIndex: guessedNote,
         gamestate: 'showAnswer',
         statistics: {
           ...statistics,
@@ -100,18 +124,8 @@ class App extends Component {
     }
   }
 
-  continueGuessing = () => {
-    this.setState({
-      gamestate: 'guessNote',
-      pressedIndex: null,
-      pressSuccess: false,
-    });
-    this.progress()
-    //this.loop = window.setInterval(this.progress, loopLength);
-  }
-
   render() {
-    const { baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
     console.log(this.state)
     return (
       <div className="App">
@@ -129,8 +143,8 @@ class App extends Component {
           //pressSuccess={pressSuccess}
           //answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
-        <Statistics statistics={this.state.statistics} />
-        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Forget statistics</button>
+        <Statistics statistics={statistics} />
+        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button>
       </div>
     );
   }
