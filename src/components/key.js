@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const Key = ({index, isBasenote, isTargetNote, handleKeyPress, pressedIndex, pressSuccess}) => {
+export const Key = ({index, isBasenote, isTargetNote, handleKeyPress, pressedIndex, pressSuccess, showAnswer}) => {
     const isBlack = [1, 3, 6, 8, 10].includes(index % 12);
     
     return (
@@ -10,7 +10,7 @@ export const Key = ({index, isBasenote, isTargetNote, handleKeyPress, pressedInd
           (isBlack ? ' black' : '') +
           (pressSuccess && pressedIndex === index ? ' success' : '') +
           (!pressSuccess && pressedIndex === index ? ' failure' : '') +
-          ((isTargetNote && !pressSuccess) ? ' answer' : '')
+          ((isTargetNote && showAnswer) ? ' answer' : '')
         } 
         onClick={handleKeyPress(index)}>
       </div>

@@ -61,6 +61,7 @@ class Keyboard extends Component {
           .then(() => {
             // automatically start next challenge after a delay
             window.setTimeout(() => {
+              this.setState({ keyboardState: 'PLAY_SOUND' })
               this.props.actions.startChallenge(this.nextSound())
                 .then(() => {
                   return this.props.playNotes([
@@ -86,10 +87,10 @@ class Keyboard extends Component {
           index={i}
           isBasenote={this.props.notes.baseNote === i}
           isTargetNote={this.props.notes.targetNote === i}
+          pressedIndex={this.props.notes.guessedNote}
+          pressSuccess={this.props.notes.guessedNote === this.props.notes.targetNote}
           handleKeyPress={this.handleKeyPress}
-          pressedIndex={this.guessedNote}
-          pressSuccess={this.guessedNote === this.props.notes.targetNote}
-          //answerNote={this.state.keyboardState === 'showAnswer' ? intervalNote : ''}
+          showAnswer={this.state.keyboardState === 'SHOW_ANSWER'}
         />
       );
     }
