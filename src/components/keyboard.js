@@ -4,9 +4,7 @@ import { bindActionCreators } from 'redux';
 import { Key } from "./key";
 import * as actions from "../actions/index";
 
-// const Keyboard = ({ baseNote, handleKeyPress, pressedIndex, pressSuccess, answerNote }) =>
 
-//const loopLength = 3000;
 const getRandom = (array) => {
   return array[Math.floor(Math.random() * array.length)];
 }
@@ -68,21 +66,13 @@ class Keyboard extends Component {
   checkPoints = (guessedNote) => {
     const { points, baseNote, intervalNote, statistics } = this.state;
     const interval = Math.abs(intervalNote - baseNote);
-    sendIntervalData({
-      userID: this.userID,
-      baseNote,
-      intervalNote,
-      guessedNote,
-      timestamp: Date.now(),
-      guessTime: Date.now() - this.lastPlayed,
-    });
     this.lastPlayed = Date.now();
     if (guessedNote === intervalNote) {
       return {
         points: points + 1,
-        pressSuccess: true,
-        pressedIndex: guessedNote,
-        gamestate: 'showAnswer',
+        //pressSuccess: true,
+        //pressedIndex: guessedNote,
+        //gamestate: 'showAnswer',
         statistics: {
           ...statistics,
           [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
@@ -91,9 +81,9 @@ class Keyboard extends Component {
     } else {
       return {
         points: points - 1,
-        pressSuccess: false,
-        pressedIndex: guessedNote,
-        gamestate: 'showAnswer',
+        //pressSuccess: false,
+        //pressedIndex: guessedNote,
+        //gamestate: 'showAnswer',
         statistics: {
           ...statistics,
           [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
@@ -112,7 +102,29 @@ class Keyboard extends Component {
         this.props.playNotes([index])
           .then(() => { return this.props.actions.makeGuess({ guessedNote: index }) })
           .then(() => { return this.props.playNotes([this.props.targetNote]) })
-          //.then(() => { return this.props.actions.updatePoints() })
+          .then(() => { 
+            sendIntervalData({
+              userID: this.props.userID,
+              baseNote: this.props.notes.baseNote,
+              intervalNote: this.props.notes.targetNote,
+              guessedNote: this.props.notes.guessedNote,
+              timestamp: Date.now(),
+              guessTime: Date.now() - this.props.lastPlayed,
+            });
+            // TODO: update lastPlayed
+            const interval = Math.abs(targetNote - baseNote);
+            let newStatistics;
+            if (guessedNote === intervalNote) {
+              newStatistics = {
+                [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
+              }
+            } else {
+              newStatistics = {
+                [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
+              }
+            }
+            return this.props.actions.updateStats({ newStatistics })
+          })
           .then(() => {
             // automatically start next challenge after a delay
             window.setTimeout(() => {

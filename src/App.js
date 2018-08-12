@@ -8,10 +8,8 @@ import { Statistics } from './components/statistics'
 
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
-const loopLength = 3000;
-const getRandom = (array) => {
-  return array[Math.floor(Math.random() * array.length)];
-}
+//const loopLength = 3000;
+
 const getOrSetUserID = () => {
   let userID = window.localStorage.getItem('userID');
   if (!userID) {
