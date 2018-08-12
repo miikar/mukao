@@ -19,7 +19,11 @@ class Keyboard extends Component {
 
   componentDidMount() {
     console.log(this.state)
-    this.props.actions.startChallenge(this.nextSound())
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.isLoaded !== this.props.isLoaded) {
+      this.props.actions.startChallenge(this.nextSound())
       .then(() => {
         return this.props.playNotes([
           this.props.notes.baseNote, 
@@ -30,22 +34,24 @@ class Keyboard extends Component {
       .then(() => {
         this.setState({ keyboardState: 'MAKE_GUESS' })
       })
+    }
   }
 
-  getLowestAccuracy = (statistics={}) => {
-    const playedIntervals = Object.keys(statistics);
+  // getLowestAccuracy = (statistics={}) => {
+  //   const playedIntervals = Object.keys(statistics);
+  //   const { intervals } = this.props;
 
-    // Get lowest accuracy only when all intervals have been played
-    if (playedIntervals.length < intervals.length) return getRandom(intervals);
+  //   // Get lowest accuracy only when all intervals have been played
+  //   if (playedIntervals.length < intervals.length) return getRandom(intervals);
 
-    return playedIntervals.reduce((lowest, interval) => {
-      if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
-        console.log('lowest', interval)
-        return interval;
-      }
-      return lowest;
-    }, 1
-  )};
+  //   return playedIntervals.reduce((lowest, interval) => {
+  //     if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
+  //       console.log('lowest', interval)
+  //       return interval;
+  //     }
+  //     return lowest;
+  //   }, 1
+  // )};
 
   nextSound = () => {
     const baseNote = Math.floor(Math.random() * this.props.numNotes);
@@ -93,6 +99,7 @@ class Keyboard extends Component {
   }
 
   handleKeyPress = (index) => () => {
+    const { baseNote, targetNote, guessedNote } = this.props.notes;
     if (this.state.keyboardState === 'PLAY_SOUND' || this.state.keyboardState === 'SHOW_ANSWER') return;
     if (this.state.keyboardState === 'MAKE_GUESS') {
       if (index === this.props.notes.baseNote) {
@@ -103,27 +110,19 @@ class Keyboard extends Component {
           .then(() => { return this.props.actions.makeGuess({ guessedNote: index }) })
           .then(() => { return this.props.playNotes([this.props.targetNote]) })
           .then(() => { 
-            sendIntervalData({
-              userID: this.props.userID,
-              baseNote: this.props.notes.baseNote,
-              intervalNote: this.props.notes.targetNote,
-              guessedNote: this.props.notes.guessedNote,
-              timestamp: Date.now(),
-              guessTime: Date.now() - this.props.lastPlayed,
-            });
+            // sendIntervalData({
+            //   userID: this.props.userID,
+            //   baseNote: this.props.notes.baseNote,
+            //   intervalNote: this.props.notes.targetNote,
+            //   guessedNote: this.props.notes.guessedNote,
+            //   timestamp: Date.now(),
+            //   guessTime: Date.now() - this.props.lastPlayed,
+            // });
             // TODO: update lastPlayed
             const interval = Math.abs(targetNote - baseNote);
-            let newStatistics;
-            if (guessedNote === intervalNote) {
-              newStatistics = {
-                [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
-              }
-            } else {
-              newStatistics = {
-                [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
-              }
-            }
-            return this.props.actions.updateStats({ newStatistics })
+            const wasCorrect = guessedNote === targetNote;
+
+            return this.props.actions.updateStats({ interval, wasCorrect })
           })
           .then(() => {
             // automatically start next challenge after a delay

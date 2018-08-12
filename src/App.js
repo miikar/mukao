@@ -4,7 +4,7 @@ import { sendIntervalData } from './Analytics';
 import './App.css';
 
 import Keyboard from './components/keyboard'
-import { Statistics } from './components/statistics'
+import Statistics from './components/statistics'
 
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
@@ -23,7 +23,7 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
+    // const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
     this.userID = getOrSetUserID();
     this.state = {
     //  baseNote: null,
@@ -32,7 +32,8 @@ class App extends Component {
     //  pressedIndex: null,
     //  pressSuccess: true,
     //  gamestate: 'guessNote',
-      statistics: savedStatistics
+      // statistics: savedStatistics
+      isLoaded: false
     }
 
     const noteTiming = {}
@@ -49,8 +50,12 @@ class App extends Component {
 
   }
 
+  soundsLoaded = () => {
+    this.setState({isLoaded: true});
+  }
+
   componentDidMount() {
-    this.notes.once('load', this.progress);
+    this.notes.once('load', this.soundsLoaded);
   }
 
   playNotes = (notes) => {
@@ -123,7 +128,7 @@ class App extends Component {
   }
 
   render() {
-    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics, isLoaded } = this.state;
     console.log(this.state)
     return (
       <div className="App">
@@ -132,6 +137,7 @@ class App extends Component {
           {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
+          isLoaded={isLoaded}
           numNotes={numNotes}
           intervals={intervals}
           playNotes={this.playNotes}

@@ -1,13 +1,13 @@
 import React from 'react'
 import { connect } from "react-redux"
 
-const Statistics = () => {
+const Statistics = ({statistics}) => {
     return (
       <div className="statistics">
-        { Object.keys(this.props.statistics).map((interval, i) => (
+        { Object.keys(statistics).map((interval, i) => (
           <div className="statistic">
             <div>{interval}</div> 
-            <div>{(getCorrectAnswers(this.props.statistics[interval]) / this.props.statistics[interval].length * 100).toFixed(0)}%</div>
+            <div>{(getCorrectAnswers(statistics[interval]) / statistics[interval].length * 100).toFixed(0)}%</div>
           </div>
         ))}
       </div>
@@ -29,4 +29,4 @@ const StatisticsContainer = connect(
   mapStateToProps
 )(Statistics)
 
-export default StatisticsContainer
+export default StatisticsContainer;

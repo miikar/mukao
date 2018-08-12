@@ -24,11 +24,12 @@ export const makeGuess = (notes) => (dispatch) => {
     })
 }
 
-export const updateStats = (stats) => dispatch => {
+export const updateStats = (interval, wasCorrect) => dispatch => {
     return new Promise((resolve) => {
         dispatch({
             type: UPDATE_STATS,
-            stats
+            interval,
+            wasCorrect,
         })
         resolve()
     })
