@@ -3,6 +3,9 @@ import {Howl} from 'howler';
 import { sendIntervalData } from './Analytics';
 import './App.css';
 
+import Keyboard from './Keyboard';
+import Statistics from './Statistics';
+
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
 const loopLength = 3000;
@@ -73,29 +76,12 @@ class App extends Component {
     this.lastPlayed = Date.now();
   }
 
-  getLowestAccuracy = (statistics={}) => {
-    const playedIntervals = Object.keys(statistics);
-
-    // Get lowest accuracy only when all intervals have been played
-    if (playedIntervals.length < intervals.length) return getRandom(intervals);
-
-    return playedIntervals.reduce((lowest, interval) => {
-      if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
-        console.log('lowest', interval)
-        return interval;
-      }
-      return lowest;
-    }, 1
-  )};
-
   nextSound = () => {
     const baseNote = Math.floor(Math.random() * numNotes);
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote > 36) direction = -1;
     const noteDistance = getRandom(intervals) * direction;
-    
-    // const noteDistance = this.getLowestAccuracy(this.state.statistics) * direction;
 
     return { 
       baseNote: baseNote,
@@ -178,6 +164,7 @@ class App extends Component {
           {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
+          numNotes={numNotes}
           baseNote={baseNote} 
           handleKeyPress={this.handleKeyPress} 
           pressedIndex={pressedIndex}
@@ -192,63 +179,3 @@ class App extends Component {
 }
 
 export default App;
-
-const Key = ({index, isBasenote, handleKeyPress, pressedIndex, pressSuccess, answerNote}) => {
-  const isBlack = [1, 3, 6, 8, 10].includes(index % 12);
-  return (
-    <div 
-      className={'note' +
-        (isBasenote ? ' isBasenote' : '') +
-        (isBlack ? ' black' : '') +
-        (pressSuccess && pressedIndex === index ? ' success' : '') +
-        (!pressSuccess && pressedIndex === index ? ' failure' : '') +
-        ((answerNote === index && !pressSuccess) ? ' answer' : '')
-      } 
-      onClick={handleKeyPress(index)}>
-    </div>
-  )
-}
-
-const Keyboard = ({ baseNote, handleKeyPress, pressedIndex, pressSuccess, answerNote }) => {
-  const keys = [];
-  for (let i = 0; i < numNotes; i++) {
-    keys.push(
-      <Key 
-        key={i} 
-        index={i} 
-        isBasenote={baseNote == i} 
-        handleKeyPress={handleKeyPress}
-        pressedIndex={pressedIndex}
-        pressSuccess={pressSuccess}
-        answerNote={answerNote}
-      />
-    );
-  }
-  return (
-    <div className="keyboard-scroll-container">
-      <div className="keyboard-container">
-        {keys}
-      </div>
-    </div>
-  );
-}
-
-const Statistics = ({ statistics }) => {
-  return (
-    <div className="statistics">
-      { Object.keys(statistics).map((interval, i) => (
-        <div className="statistic">
-          <div>{interval}</div> 
-          <div>{(getCorrectAnswers(statistics[interval]) / statistics[interval].length * 100).toFixed(0)}%</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-const getCorrectAnswers = (intervalStatistic=[]) => intervalStatistic.reduce(
-  (acc, answer) => {
-    if (answer === 1) return acc + 1;
-    return acc;
-  }, 0
-)
