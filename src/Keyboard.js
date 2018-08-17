@@ -4,20 +4,17 @@ import React, { Component } from 'react';
 class Keyboard extends Component{
     keyboard = React.createRef();
 
-    componentDidUpdate() {
+    componentDidUpdate({baseNote: prevBasenote}) {
         const { baseNote } = this.props;
+        if (baseNote !== prevBasenote) {
 
-        try {
-            const baseNoteKey = this.keyboard.current.children[baseNote];
+            const baseNoteKey = this.keyboard ? this.keyboard.current.children[baseNote] : 0;
             baseNoteKey.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
                 inline: 'center',
             })
-        } catch (e) {
-            console.log("Couldn't scroll the container", e);
         }
-
     }
 
     render() {
