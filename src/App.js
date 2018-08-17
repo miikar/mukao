@@ -35,6 +35,7 @@ class App extends Component {
       pressSuccess: true,
       gamestate: 'guessNote',
       statistics: savedStatistics,
+      notes: [],
     }
 
     // Init notes
@@ -56,6 +57,21 @@ class App extends Component {
     this.notes.once('load', this.progress);
   }
 
+  playNotes = async () => {
+    const { notes=[] } = this.state;
+    for (const note of notes) {
+      await this.playSound(note);
+    };
+    this.lastPlayed = Date.now();
+  }
+
+  playSound = (index, duration=700) => new Promise(
+    (resolve) => {
+      this.notes.play('' + index);
+      window.setTimeout(resolve, duration);
+    }
+  );
+
   progress = () => {
     //if (!this.state.pressedIndex) {
     //  const points = this.checkPoints();
@@ -65,18 +81,10 @@ class App extends Component {
     //}
 
     // Play the selected interval
-    const notes = this.nextSound();
-    this.playSound(notes.baseNote);
-
-    window.setTimeout(() => {
-      this.playSound(notes.intervalNote);
-    }, 700)
-
-    this.setState(notes);
-    this.lastPlayed = Date.now();
+    this.setState(this.getNewInterval(), this.playNotes);
   }
 
-  nextSound = () => {
+  getNewInterval = () => {
     const baseNote = Math.floor(Math.random() * numNotes);
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
@@ -85,7 +93,8 @@ class App extends Component {
 
     return { 
       baseNote: baseNote,
-      intervalNote: baseNote + noteDistance
+      intervalNote: baseNote + noteDistance,
+      notes: [baseNote, baseNote + noteDistance]
     }
   }
 
@@ -136,21 +145,32 @@ class App extends Component {
     //this.loop = window.setInterval(this.progress, loopLength);
   }
 
-  playSound = (index) => {
-    this.notes.play('' + index);
-  }
+
 
   handleKeyPress = (index) => () => {
-    if (this.state.gamestate === 'showAnswer') {
+    const { baseNote, intervalNote, gamestate } = this.state;
+    if (index === baseNote) {
+      this.playNotes();
+      return;
+    }
+    if (gamestate === 'showAnswer' ) {
       this.playSound(index);
       return;
     }
     this.playSound(index);
-    const points = this.checkPoints(index);
-    this.setState(points);
-    window.localStorage.setItem('statistics', JSON.stringify(points.statistics));
+    // Continue only if player pressed correctly
+    if (index !== intervalNote) {
+      this.setState({
+        pressSuccess: false,
+        pressedIndex: index,
+      });
+    } else {
+      const points = this.checkPoints(index);
+      this.setState(points);
+      window.setTimeout(this.continueGuessing, 2000);
+    }
 
-    window.setTimeout(this.continueGuessing, 2000);
+
     //window.clearInterval(this.loop);
   }
 
@@ -171,8 +191,8 @@ class App extends Component {
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
-        <Statistics statistics={statistics} />
-        <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button>
+        {/* <Statistics statistics={statistics} /> */}
+        {/* <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button> */}
       </div>
     );
   }

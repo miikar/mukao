@@ -4,9 +4,16 @@ body {
   font-family: sans-serif;
 }
 
+.App {
+  height: 100vh;
+  overflow: hidden;
+}
+
 .keyboard-scroll-container {
   overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
+  height: calc(100% - 180px);
+  background-color: #7a95ad;
 }
 
 .keyboard-scroll-container::-webkit-scrollbar { 
