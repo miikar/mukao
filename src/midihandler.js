@@ -1,7 +1,6 @@
 import 'web-midi-api';
 
 const initMidiHandler = (callback) => {
-    console.log(callback);
     if (navigator.requestMIDIAccess) {
         navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
     
@@ -28,7 +27,6 @@ const initMidiHandler = (callback) => {
             case 144: // note on
                 if (velocity > 0) {
                     callback(note - 36)();
-                    console.log({note})
                 } else {
                     // noteOff(note);
                 }

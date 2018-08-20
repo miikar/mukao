@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import initMidihandler from './midihandler';
 
-
-
 class Keyboard extends Component{
     keyboard = React.createRef();
 
