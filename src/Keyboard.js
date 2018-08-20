@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
+import initMidihandler from './midihandler';
+
 
 
 class Keyboard extends Component{
     keyboard = React.createRef();
+
+    componentDidMount() {
+        initMidihandler(this.props.handleKeyPress);
+    }
 
     componentDidUpdate({baseNote: prevBasenote}) {
         const { baseNote } = this.props;

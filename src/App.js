@@ -28,6 +28,7 @@ class App extends Component {
     const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
     this.userID = getOrSetUserID();
     this.state = {
+      numNotes: 49,
       baseNote: null,
       intervalNote: null,
       points: 0,
@@ -50,6 +51,11 @@ class App extends Component {
       sprite: noteTiming,
       loop: false,
     });
+
+    this.successSound = new Howl({
+      src: ['success.wav'],
+      volume: 0.9
+    })
 
   }
 
@@ -88,7 +94,7 @@ class App extends Component {
     const baseNote = Math.floor(Math.random() * numNotes);
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
-    if (baseNote > 36) direction = -1;
+    if (baseNote >= numNotes - 12) direction = -1;
     const noteDistance = getRandom(intervals) * direction;
 
     return { 
@@ -149,6 +155,7 @@ class App extends Component {
 
   handleKeyPress = (index) => () => {
     const { baseNote, intervalNote, gamestate } = this.state;
+
     if (index === baseNote) {
       this.playNotes();
       return;
@@ -168,6 +175,8 @@ class App extends Component {
       const points = this.checkPoints(index);
       this.setState(points);
       window.setTimeout(this.continueGuessing, 2000);
+      this.successSound.play();
+      this.successSound.rate(Math.max(0.2, Math.random()));
     }
 
 
