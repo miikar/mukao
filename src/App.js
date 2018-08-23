@@ -21,11 +21,13 @@ const getOrSetUserID = () => {
   return userID;
 }
 
+const UserStatistics = new Statistics(intervals.length);
+
 class App extends Component {
 
   constructor(props) {
     super(props);
-    const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
+
     this.userID = getOrSetUserID();
     this.state = {
       numNotes: 49,
@@ -35,7 +37,6 @@ class App extends Component {
       pressedIndex: null,
       pressSuccess: true,
       gamestate: 'guessNote',
-      statistics: savedStatistics,
       notes: [],
     }
 
@@ -95,7 +96,7 @@ class App extends Component {
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote >= numNotes - 12) direction = -1;
-    const noteDistance = getRandom(intervals) * direction;
+    const noteDistance = UserStatistics.getNewInterval() * direction;
 
     return { 
       baseNote: baseNote,
@@ -105,15 +106,15 @@ class App extends Component {
   }
 
   checkPoints = (guessedNote) => {
-    const { points, baseNote, intervalNote, statistics } = this.state;
+    const { points, baseNote, intervalNote } = this.state;
     const interval = Math.abs(intervalNote - baseNote);
+    const guessTime = Date.now() - this.lastPlayed;
     sendIntervalData({
       userID: this.userID,
       baseNote,
       intervalNote,
       guessedNote,
-      timestamp: Date.now(),
-      guessTime: Date.now() - this.lastPlayed,
+      guessTime,
     });
     this.lastPlayed = Date.now();
     if (guessedNote === intervalNote) {
@@ -122,10 +123,6 @@ class App extends Component {
         pressSuccess: true,
         pressedIndex: guessedNote,
         gamestate: 'showAnswer',
-        statistics: {
-          ...statistics,
-          [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
-        }
       }
     } else {
       return {
@@ -133,10 +130,6 @@ class App extends Component {
         pressSuccess: false,
         pressedIndex: guessedNote,
         gamestate: 'showAnswer',
-        statistics: {
-          ...statistics,
-          [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
-        }
       }
     }
   }
@@ -155,6 +148,8 @@ class App extends Component {
 
   handleKeyPress = (index) => () => {
     const { baseNote, intervalNote, gamestate } = this.state;
+
+    UserStatistics.update(baseNote, intervalNote, index);
 
     if (index === baseNote) {
       this.playNotes();
@@ -184,8 +179,8 @@ class App extends Component {
   }
 
   render() {
-    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
-    console.log(this.state)
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
+    // console.log(this.state)
     return (
       <div className="App">
         <header className="App-header">
@@ -200,8 +195,6 @@ class App extends Component {
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
-        {/* <Statistics statistics={statistics} /> */}
-        {/* <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button> */}
       </div>
     );
   }
