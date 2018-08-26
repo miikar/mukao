@@ -9,14 +9,14 @@ class Keyboard extends Component{
     }
 
     componentDidUpdate({baseNote: prevBasenote}) {
-        const { baseNote } = this.props;
+        const { baseNote, intervalNote } = this.props;
         if (baseNote !== prevBasenote) {
 
             const baseNoteKey = this.keyboard ? this.keyboard.current.children[baseNote] : 0;
             baseNoteKey.scrollIntoView({
                 behavior: 'smooth',
-                block: 'center',
-                inline: 'center',
+                block: baseNote > intervalNote ? 'end': 'start',
+                inline: baseNote > intervalNote ? 'end': 'start',
             })
         }
     }

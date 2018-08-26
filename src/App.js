@@ -188,6 +188,7 @@ class App extends Component {
           {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
+          intervalNote={intervalNote}
           numNotes={numNotes}
           baseNote={baseNote} 
           handleKeyPress={this.handleKeyPress} 
