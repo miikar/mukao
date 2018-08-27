@@ -180,7 +180,7 @@ class App extends Component {
 
   render() {
     const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
-    // console.log(this.state)
+    console.log(this.state)
     return (
       <div className="App">
         <header className="App-header">
