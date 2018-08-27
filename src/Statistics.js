@@ -12,7 +12,8 @@ const createGuessMatrix = (numberOfIntervals) => {
 }
 
 class Statistics {
-  constructor (numberOfIntervals) {
+  constructor (numberOfIntervals=12) {
+    this.numberOfIntervals = numberOfIntervals;
     this.previousInterval = 0;
     this.statistics = JSON.parse(window.localStorage.getItem('userStatistics'));
     if (!this.statistics) this.statistics = createGuessMatrix(numberOfIntervals);

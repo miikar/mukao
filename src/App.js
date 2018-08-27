@@ -21,7 +21,7 @@ const getOrSetUserID = () => {
   return userID;
 }
 
-const UserStatistics = new Statistics(intervals.length);
+const UserStatistics = new Statistics();
 
 class App extends Component {
 
@@ -96,7 +96,7 @@ class App extends Component {
     let direction = getRandom([-1, 1]);
     if (baseNote < 12) direction = 1;
     if (baseNote >= numNotes - 12) direction = -1;
-    const noteDistance = UserStatistics.getNewInterval() * direction;
+    const noteDistance = getRandom(intervals) * direction;
 
     return { 
       baseNote: baseNote,

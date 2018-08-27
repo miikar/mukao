@@ -15,7 +15,6 @@ class Keyboard extends Component{
             const baseNoteKey = this.keyboard ? this.keyboard.current.children[baseNote] : 0;
             baseNoteKey.scrollIntoView({
                 behavior: 'smooth',
-                block: baseNote > intervalNote ? 'end': 'start',
                 inline: baseNote > intervalNote ? 'end': 'start',
             })
         }
