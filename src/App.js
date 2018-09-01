@@ -21,13 +21,12 @@ const getOrSetUserID = () => {
   return userID;
 }
 
-const UserStatistics = new Statistics();
-
 class App extends Component {
+  appContainer = React.createRef();
 
   constructor(props) {
     super(props);
-
+    const savedStatistics = JSON.parse(window.localStorage.getItem('statistics')) || {};
     this.userID = getOrSetUserID();
     this.state = {
       numNotes: 49,
@@ -37,8 +36,13 @@ class App extends Component {
       pressedIndex: null,
       pressSuccess: true,
       gamestate: 'guessNote',
+      statistics: savedStatistics,
       notes: [],
+      skill: 0,
+      selectedNote: null,
     }
+
+    this.timer = null;
 
     // Init notes
     const noteTiming = {};
@@ -106,15 +110,15 @@ class App extends Component {
   }
 
   checkPoints = (guessedNote) => {
-    const { points, baseNote, intervalNote } = this.state;
+    const { points, baseNote, intervalNote, statistics } = this.state;
     const interval = Math.abs(intervalNote - baseNote);
-    const guessTime = Date.now() - this.lastPlayed;
     sendIntervalData({
       userID: this.userID,
       baseNote,
       intervalNote,
       guessedNote,
-      guessTime,
+      timestamp: Date.now(),
+      guessTime: Date.now() - this.lastPlayed,
     });
     this.lastPlayed = Date.now();
     if (guessedNote === intervalNote) {
@@ -123,13 +127,21 @@ class App extends Component {
         pressSuccess: true,
         pressedIndex: guessedNote,
         gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(1) : [1]
+        }
       }
     } else {
       return {
         points: points - 1,
         pressSuccess: false,
         pressedIndex: guessedNote,
-        gamestate: 'showAnswer',
+        //gamestate: 'showAnswer',
+        statistics: {
+          ...statistics,
+          [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
+        }
       }
     }
   }
@@ -144,12 +156,20 @@ class App extends Component {
     //this.loop = window.setInterval(this.progress, loopLength);
   }
 
+  updateSkill = () => {
 
+    const avgAcc = this.state.statistics.reduce(
+      () => {
+        
+      }
+    )
+    this.setState({
+      skill: 0
+    })
+  }
 
   handleKeyPress = (index) => () => {
     const { baseNote, intervalNote, gamestate } = this.state;
-
-    UserStatistics.update(baseNote, intervalNote, index);
 
     if (index === baseNote) {
       this.playNotes();
@@ -161,41 +181,63 @@ class App extends Component {
     }
     this.playSound(index);
     // Continue only if player pressed correctly
-    if (index !== intervalNote) {
-      this.setState({
-        pressSuccess: false,
-        pressedIndex: index,
-      });
-    } else {
-      const points = this.checkPoints(index);
-      this.setState(points);
+    if (index === intervalNote) {
       window.setTimeout(this.continueGuessing, 2000);
       this.successSound.play();
       this.successSound.rate(Math.max(0.2, Math.random()));
     }
+    const points = this.checkPoints(index);
+    this.setState(points);
 
 
     //window.clearInterval(this.loop);
   }
 
+  handleTouch = (event) => {
+    const { baseNote, intervalNote, gamestate, selectedNote } = this.state;
+    event.preventDefault()
+
+    switch (event.type) {
+      case 'touchstart':
+        console.log(event.target)
+        break;
+      case 'touchmove':
+        break;
+      case 'touchend':
+        console.log(event)
+        break;
+    }
+
+    // if (evt.type === 'touchstart') {
+    //   console.log("touchstart")
+    //   console.log(evt.changedTouches[0].pageX)
+    // } else if (evt.type === 'touchmove') {
+
+    // } else if (evt.type === 'touchend') {
+    //   console.log(evt.changedTouches[0].pageX)
+    // }
+  }
+
   render() {
-    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate } = this.state;
+    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
     console.log(this.state)
     return (
-      <div className="App">
+      <div className="App" ref={this.appContainer}>
         <header className="App-header">
           <h1 className="App-title">Points: {points}</h1>
           {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
-          intervalNote={intervalNote}
           numNotes={numNotes}
           baseNote={baseNote} 
-          handleKeyPress={this.handleKeyPress} 
+          handleTouch={this.handleTouch}
+          // handleKeyPress={this.handleKeyPress} 
           pressedIndex={pressedIndex}
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}
         />
+        {/* <Statistics statistics={statistics} /> */}
+        {/* <button onClick={() => {window.localStorage.clear(); this.setState({statistics: {}})}}>Reset statistics</button> */}
       </div>
     );
   }

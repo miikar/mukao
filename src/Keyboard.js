@@ -6,6 +6,11 @@ class Keyboard extends Component{
 
     componentDidMount() {
         initMidihandler(this.props.handleKeyPress);
+
+        // Register event handlers
+        // this.keyboard.current.addEventListener("touchstart", this.props.handleTouch, false);
+        // this.keyboard.current.addEventListener("touchend", this.props.handleTouch, false);
+        // this.keyboard.current.addEventListener("touchmove", this.props.handleTouch, false);
     }
 
     componentDidUpdate({baseNote: prevBasenote}) {
@@ -21,15 +26,18 @@ class Keyboard extends Component{
     }
 
     render() {
-        const { numNotes, baseNote, handleKeyPress, pressedIndex, pressSuccess, answerNote } = this.props;
+        const { numNotes, baseNote, handleTouch, pressedIndex, pressSuccess, answerNote } = this.props;
         const keys = [];
         for (let i = 0; i < numNotes; i++) {
             keys.push(
                 <Key 
+                    onTouchStart={handleTouch(index)}
+                    onTouchEnd={handleTouch(index)}
+                    onTouchMove={handleTouch(index)}
                     key={i} 
                     index={i} 
                     isBasenote={baseNote == i} 
-                    handleKeyPress={handleKeyPress}
+                    // handleKeyPress={handleKeyPress}
                     pressedIndex={pressedIndex}
                     pressSuccess={pressSuccess}
                     answerNote={answerNote}
@@ -57,7 +65,11 @@ const Key = ({index, isBasenote, handleKeyPress, pressedIndex, pressSuccess, ans
             (!pressSuccess && pressedIndex === index ? ' failure' : '') +
             ((answerNote === index && !pressSuccess) ? ' answer' : '')
         } 
-        onClick={handleKeyPress(index)}>
+        onTouchStart={handleTouch(index)}
+        onTouchEnd={onTouchEnd}
+        onTouchMove={onTouchEnd}
+        // onClick={handleKeyPress(index)}
+        >
         </div>
     )
 }

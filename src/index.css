@@ -24,6 +24,7 @@ body {
   width: 1230px;
   margin: auto;
   text-align: left;
+  touch-action: none;
 }
 
 .note {
