@@ -195,16 +195,24 @@ class App extends Component {
 
   handleTouch = (event) => {
     const { baseNote, intervalNote, gamestate, selectedNote } = this.state;
-    event.preventDefault()
-
+    event.preventDefault();
+    var el = document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+    if (!el || event.target.id != baseNote) return;
+    console.log(event.type)
+    // console.log(el)
+    const noteId = parseInt(el.id);
+    
     switch (event.type) {
       case 'touchstart':
-        console.log(event.target)
-        break;
       case 'touchmove':
+        if (el.id != selectedNote) {
+          this.setState({selectedNote: noteId})
+        }
         break;
       case 'touchend':
-        console.log(event)
+        console.log("touchend")
+        this.setState({selectedNote: null})
+        this.handleKeyPress(noteId)();
         break;
     }
 
@@ -219,19 +227,21 @@ class App extends Component {
   }
 
   render() {
-    const { started, baseNote, intervalNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
+    const { started, baseNote, intervalNote, selectedNote, points, pressedIndex, pressSuccess, gamestate, statistics } = this.state;
     console.log(this.state)
+    const selectedInterval = Math.abs(selectedNote-baseNote)
     return (
       <div className="App" ref={this.appContainer}>
         <header className="App-header">
           <h1 className="App-title">Points: {points}</h1>
+          {selectedNote && <h1>Interval: {selectedInterval}</h1>}
           {gamestate === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - baseNote}</h1>}
         </header>
         <Keyboard
           numNotes={numNotes}
           baseNote={baseNote} 
           handleTouch={this.handleTouch}
-          // handleKeyPress={this.handleKeyPress} 
+          handleKeyPress={this.handleKeyPress} 
           pressedIndex={pressedIndex}
           pressSuccess={pressSuccess}
           answerNote={gamestate === 'showAnswer' ? intervalNote : ''}

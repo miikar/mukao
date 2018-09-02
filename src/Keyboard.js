@@ -8,9 +8,10 @@ class Keyboard extends Component{
         initMidihandler(this.props.handleKeyPress);
 
         // Register event handlers
-        // this.keyboard.current.addEventListener("touchstart", this.props.handleTouch, false);
-        // this.keyboard.current.addEventListener("touchend", this.props.handleTouch, false);
-        // this.keyboard.current.addEventListener("touchmove", this.props.handleTouch, false);
+        this.keyboard.current.addEventListener("touchstart", this.props.handleTouch, false);
+        this.keyboard.current.addEventListener("touchmove", this.props.handleTouch, false);
+        this.keyboard.current.addEventListener("touchend", this.props.handleTouch, false);
+
     }
 
     componentDidUpdate({baseNote: prevBasenote}) {
@@ -21,23 +22,22 @@ class Keyboard extends Component{
             baseNoteKey.scrollIntoView({
                 behavior: 'smooth',
                 inline: baseNote > intervalNote ? 'end': 'start',
+                block: baseNote > intervalNote ? 'end': 'start',
             })
         }
     }
 
     render() {
-        const { numNotes, baseNote, handleTouch, pressedIndex, pressSuccess, answerNote } = this.props;
+        const { numNotes, baseNote, handleTouch, handleKeyPress, pressedIndex, pressSuccess, answerNote } = this.props;
         const keys = [];
         for (let i = 0; i < numNotes; i++) {
             keys.push(
                 <Key 
-                    onTouchStart={handleTouch(index)}
-                    onTouchEnd={handleTouch(index)}
-                    onTouchMove={handleTouch(index)}
+                    // handleTouch={handleTouch}
                     key={i} 
                     index={i} 
                     isBasenote={baseNote == i} 
-                    // handleKeyPress={handleKeyPress}
+                    handleKeyPress={handleKeyPress}
                     pressedIndex={pressedIndex}
                     pressSuccess={pressSuccess}
                     answerNote={answerNote}
@@ -46,7 +46,11 @@ class Keyboard extends Component{
         }
         return (
             <div className="keyboard-scroll-container" ref={this.scrollContainer}>
-                <div className="keyboard-container" ref={this.keyboard}>
+                <div className="keyboard-container" ref={this.keyboard}
+                    // onTouchStart={handleTouch}
+                    // onTouchMove={handleTouch}
+                    // onTouchEnd={handleTouch}
+                    >
                     {keys}
                 </div>
             </div>
@@ -58,6 +62,7 @@ const Key = ({index, isBasenote, handleKeyPress, pressedIndex, pressSuccess, ans
     const isBlack = [1, 3, 6, 8, 10].includes(index % 12);
     return (
         <div 
+        id={index}
         className={'note' +
             (isBasenote ? ' isBasenote' : '') +
             (isBlack ? ' black' : '') +
@@ -65,10 +70,11 @@ const Key = ({index, isBasenote, handleKeyPress, pressedIndex, pressSuccess, ans
             (!pressSuccess && pressedIndex === index ? ' failure' : '') +
             ((answerNote === index && !pressSuccess) ? ' answer' : '')
         } 
-        onTouchStart={handleTouch(index)}
-        onTouchEnd={onTouchEnd}
-        onTouchMove={onTouchEnd}
-        // onClick={handleKeyPress(index)}
+        // onMouseOver={() => console.log(index)}
+        // onTouchStart={handleTouch(index)}
+        // onTouchEnd={handleTouch(index)}
+        // onTouchMove={handleTouch(index)}
+        onClick={handleKeyPress(index)}
         >
         </div>
     )
