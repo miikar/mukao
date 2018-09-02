@@ -64,6 +64,8 @@ class Statistics {
   }
 
   update = (baseNote, intervalNote, guessedNote, guessTime) => {
+    if (!baseNote || !intervalNote || !guessedNote) return;
+    
     const interval = Math.abs(baseNote - intervalNote);
     const guessInterval = Math.abs(baseNote - guessedNote);
     if (guessInterval > this.numberOfIntervals) return;
@@ -72,49 +74,11 @@ class Statistics {
 
     this.statistics[interval][guessInterval] = totalGuesses + 1;
     this.save();
-    console.table(this.statistics);
   }
 
   save = () => {
     window.localStorage.setItem('userStatistics', JSON.stringify(this.statistics));
   }
 }
-
-
-// statistics: {
-//   ...statistics,
-//   [interval]: statistics[interval] ? statistics[interval].concat(0) : [0]
-// }
-
-
-// ({ statistics }) => {
-//     return (
-//       <div className="statistics">
-//         { Object.keys(statistics).map((interval, i) => (
-//           <div className="statistic">
-//             <div>{interval}</div> 
-//             <div>{(getCorrectAnswers(statistics[interval]) / statistics[interval].length * 100).toFixed(0)}%</div>
-//           </div>
-//         ))}
-//       </div>
-//     )
-//   }
-  
-
-
-// getLowestAccuracy = (statistics={}) => {
-//   const playedIntervals = Object.keys(statistics);
-
-//   // Get lowest accuracy only when all intervals have been played
-//   if (playedIntervals.length < intervals.length) return getRandom(intervals);
-
-//   return playedIntervals.reduce((lowest, interval) => {
-//     if (getCorrectAnswers(statistics[interval]) < getCorrectAnswers(statistics[lowest])) {
-//       console.log('lowest', interval)
-//       return interval;
-//     }
-//     return lowest;
-//   }, 1
-// )};
 
 export default Statistics;
