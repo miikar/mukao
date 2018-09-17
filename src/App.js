@@ -51,7 +51,7 @@ class App extends Component {
         <header className="App-header">
           <h1 className="App-title">Points: {this.game.points}</h1>
           <h1 className="App-title">Highscore: {this.game.highScore}</h1>
-          {this.game.state === 'showAnswer' && <h1 className="App-title">Correct interval: {this.game.answerInterval}, you guessed: {pressedIndex - baseNote}</h1>}
+          {this.game.state === 'showAnswer' && <h1 className="App-title">Correct interval: {this.game.answerInterval}</h1>}
         </header>
         <Keyboard
           numNotes={numNotes}

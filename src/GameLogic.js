@@ -42,7 +42,7 @@ class GameLogic {
     }
     const newInterval = this.getNewInterval(this.currentInterval);
     await this.selectAndPlayChord();
-    this.sounds.playNotes([newInterval]);
+    await this.sounds.playNotes([newInterval]);
     this.answerTimeout = setTimeout(this.continue, this.answerTime);
     this.didGuess = false;
   }
@@ -109,7 +109,7 @@ class GameLogic {
   getNewInterval = () => {
     const baseNote = this.currentInterval;
     let direction = getRandom([-1, 1]);
-    if (baseNote < 24) direction = 1;
+    if (baseNote < 36) direction = 1;
     if (baseNote >= this.numNotes - 12) direction = -1;
 
     const interval = getRandom(this.intervals) * direction;
