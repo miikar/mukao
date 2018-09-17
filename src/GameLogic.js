@@ -60,7 +60,9 @@ class GameLogic {
       chordNotes.push(nextNote);
     }
     console.log(chordNotes)
-    await this.sounds.playNotes(chordNotes)
+    chordNotes.forEach(n => {
+      this.sounds.playNotes([n])
+    });
   }
 
   handleAnswer = (interval) => {
@@ -107,7 +109,7 @@ class GameLogic {
   getNewInterval = () => {
     const baseNote = this.currentInterval;
     let direction = getRandom([-1, 1]);
-    if (baseNote < 12) direction = 1;
+    if (baseNote < 24) direction = 1;
     if (baseNote >= this.numNotes - 12) direction = -1;
 
     const interval = getRandom(this.intervals) * direction;
