@@ -8,6 +8,11 @@ import Statistics from './Statistics';
 
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
+const scale = { 
+  'tonic': 0,
+  'intervals': [2,4,5,7,9,11,12],
+  'steps': [2,2,1,2,2,2,1]
+}
 
 class App extends Component {
 
@@ -24,7 +29,7 @@ class App extends Component {
       gamestate: 'guessNote',
     }
 
-    this.game = new GameLogic(numNotes, intervals);
+    this.game = new GameLogic(numNotes, intervals, scale);
   }
 
   handleKeyPress = (index) => () => {
@@ -40,7 +45,7 @@ class App extends Component {
   render() {
     const { started, baseNote, pressedIndex, pressSuccess, intervalNote } = this.state;
 
-    console.log(this.state)
+    // console.log(this.state)
     return (
       <div className="App">
         <header className="App-header">

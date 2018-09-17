@@ -64,17 +64,21 @@ class Statistics {
   }
 
   update = (baseNote, intervalNote, guessedNote, guessTime) => {
-    if (!baseNote || !intervalNote || !guessedNote) return;
-    console.log(baseNote, intervalNote, guessedNote)
-    
-    const interval = Math.abs(baseNote - intervalNote);
-    const guessInterval = Math.abs(baseNote - guessedNote);
-    if (guessInterval > this.numberOfIntervals) return;
+    try {
+      if (!baseNote || !intervalNote || !guessedNote) return;
+      console.log(baseNote, intervalNote, guessedNote)
+      
+      const interval = Math.abs(baseNote - intervalNote);
+      const guessInterval = Math.abs(baseNote - guessedNote);
+      if (guessInterval > this.numberOfIntervals) return;
 
-    const totalGuesses = this.statistics[interval][guessInterval];
+      const totalGuesses = this.statistics[interval][guessInterval];
 
-    this.statistics[interval][guessInterval] = totalGuesses + 1;
-    this.save();
+      this.statistics[interval][guessInterval] = totalGuesses + 1;
+      this.save();
+    } catch(e) {
+      console.log(e)
+    }
   }
 
   save = () => {
