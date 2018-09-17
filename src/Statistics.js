@@ -65,6 +65,7 @@ class Statistics {
 
   update = (baseNote, intervalNote, guessedNote, guessTime) => {
     if (!baseNote || !intervalNote || !guessedNote) return;
+    console.log(baseNote, intervalNote, guessedNote)
     
     const interval = Math.abs(baseNote - intervalNote);
     const guessInterval = Math.abs(baseNote - guessedNote);

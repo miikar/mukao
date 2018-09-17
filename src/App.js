@@ -9,8 +9,6 @@ import Statistics from './Statistics';
 const numNotes = 49;
 const intervals = [1,2,3,4,5,6,7,8,9,10,11,12];
 
-const UserStatistics = new Statistics();
-
 class App extends Component {
 
   constructor(props) {
@@ -30,26 +28,25 @@ class App extends Component {
   }
 
   handleKeyPress = (index) => () => {
-    // const targetInterval = this.game.targetInterval;
     const wasCorrect = this.game.handleAnswer(index);
     this.setState({
       pressedIndex: index,
       pressSuccess: wasCorrect,
-      // baseNote: targetInterval,
-      // intervalNote: this.game.targetInterval,
+      baseNote: this.game.previousInterval,
+      intervalNote: this.game.currentInterval,
     })
   }
 
   render() {
-    const { started, baseNote, pressedIndex, pressSuccess, gamestate } = this.state;
-    const intervalNote = this.game.targetInterval;
-    // console.log(this.state)
+    const { started, baseNote, pressedIndex, pressSuccess, intervalNote } = this.state;
+
+    console.log(this.state)
     return (
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Points: {this.game.points}</h1>
           <h1 className="App-title">Highscore: {this.game.highScore}</h1>
-          {this.game.state === 'showAnswer' && <h1 className="App-title">Interval: {intervalNote - pressedIndex}</h1>}
+          {this.game.state === 'showAnswer' && <h1 className="App-title">Correct interval: {this.game.answerInterval}, you guessed: {pressedIndex - baseNote}</h1>}
         </header>
         <Keyboard
           numNotes={numNotes}
@@ -58,7 +55,7 @@ class App extends Component {
           handleKeyPress={this.handleKeyPress} 
           pressedIndex={pressedIndex}
           pressSuccess={pressSuccess}
-          answerNote={this.game.state === 'showAnswer' ? intervalNote : ''}
+          answerNote={this.game.state === 'showAnswer' ? this.game.answerNote : ''}
         />
       </div>
     );
